@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/shrey209/Like-Service/model"
 	"github.com/shrey209/Like-Service/repository"
 )
 
@@ -18,4 +19,11 @@ func (s *LikeService) LikePost(postID string) error {
 
 func (s *LikeService) GetPostLikes(postID string) (int64, error) {
 	return s.Repo.GetLikeCount(postID)
+}
+
+func (s *LikeService) BatchLikePosts(likes []model.PostLike) error {
+	return s.Repo.BatchIncrementLikes(likes)
+}
+func (s *LikeService) InitPostLike(postID string) error {
+	return s.Repo.InitPostLike(postID)
 }

@@ -1,27 +1,20 @@
 package main
 
 import (
-	"fmt"
-
+	"github.com/gin-gonic/gin"
+	"github.com/shrey209/Like-Service/controller"
 	"github.com/shrey209/Like-Service/repository"
 	"github.com/shrey209/Like-Service/service"
 )
 
 func main() {
 	session := NewSession("127.0.0.1", "like_service")
-
 	repo := repository.NewLikeRepository(session)
 	svc := service.NewLikeService(repo)
+	ctrl := controller.NewLikeController(svc)
 
-	err := svc.LikePost("post-123")
-	if err != nil {
-		fmt.Println("Error liking post:", err)
-	}
+	router := gin.Default()
+	ctrl.RegisterRoutes(router)
 
-	count, err := svc.GetPostLikes("post-123")
-	if err != nil {
-		fmt.Println("Error getting likes:", err)
-	}
-
-	fmt.Println("Post has likes:", count)
+	router.Run(":8080")
 }
