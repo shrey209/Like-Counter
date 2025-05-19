@@ -6,29 +6,29 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func main() {
 	broker := "localhost:9092"
 	topic := "like-events"
-	groupID := "like-consumer-group"
+	groupID := "like-consumer-debug-1" // force fresh offset
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	consumer := NewLikeConsumer(broker, topic, groupID)
+	consumer1 := NewLikeConsumer(broker, topic, groupID)
+	go consumer1.Start(ctx, 1, 2, 5*time.Second)
 
-	// Start 2 consumers in the same group
-	for i := 1; i <= 2; i++ {
-		go consumer.Start(ctx, i)
-	}
+	consumer2 := NewLikeConsumer(broker, topic, groupID)
+	go consumer2.Start(ctx, 2, 2, 5*time.Second)
 
-	// Handle graceful shutdown
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
 	<-sigChan
 	log.Println("🔻 Shutting down...")
 	cancel()
-	consumer.Reader.Close()
+	consumer1.Reader.Close()
+	consumer2.Reader.Close()
 }

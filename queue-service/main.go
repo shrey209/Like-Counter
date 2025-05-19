@@ -56,11 +56,14 @@ func main() {
 
 	postID := "post-123"
 
-	if err := kp.SendMessage(postID); err != nil {
-		fmt.Println("❌ Failed to send message:", err)
-		return
-	}
-	fmt.Println("📤 Message sent!")
+	for {
+		if err := kp.SendMessage(postID); err != nil {
+			fmt.Println("❌ Failed to send message:", err)
+			return
+		}
 
-	time.Sleep(time.Second)
+		fmt.Println("📤 Message sent!")
+
+		time.Sleep(time.Second)
+	}
 }
