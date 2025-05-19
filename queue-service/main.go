@@ -51,8 +51,6 @@ func main() {
 	} else {
 		fmt.Println("Topic created or already exists")
 	}
-
-	// Now create your producer and send messages ...
 	kp := NewKafkaProducer(brokers, topic)
 	defer kp.Close()
 
