@@ -99,16 +99,16 @@ func main() {
 // 	kp := NewKafkaProducer(brokers, topic)
 // 	defer kp.Close()
 
-// 	postID := "post-123"
-
+// 	postID := "abc123"
+// 	cnt := 0
 // 	for {
 // 		if err := kp.SendMessage(postID); err != nil {
-// 			fmt.Println(" Failed to send message:", err)
+// 			fmt.Println("Failed to send message:", err)
 // 			return
 // 		}
+// 		cnt++
+// 		fmt.Printf("Message sent! %d\n", cnt)
 
-// 		fmt.Println(" Message sent!")
-
-// 		time.Sleep(time.Second)
+// 		time.Sleep(50 * time.Millisecond)
 // 	}
 // }

@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/segmentio/kafka-go"
@@ -73,15 +77,52 @@ func (c *LikeConsumer) Start(ctx context.Context, id int, batchSize int, maxWait
 }
 
 func (c *LikeConsumer) processBatch(batch []kafka.Message, id int) {
-	log.Printf("📦 Consumer-%d processing batch of size %d", id, len(batch))
+	log.Printf(" Consumer-%d processing batch of size %d", id, len(batch))
 
 	postCount := make(map[string]int)
-
 	for _, msg := range batch {
-		postID := string(msg.Value)
-		postCount[postID]++
-		log.Printf("📥 Consumer-%d received: %s\n", id, postID)
+		var parsedMsg struct {
+			PostID string `json:"post_id"`
+		}
+
+		if err := json.Unmarshal(msg.Value, &parsedMsg); err != nil {
+			log.Printf(" Consumer-%d: Failed to parse message: %v\n", id, err)
+			continue
+		}
+
+		postCount[parsedMsg.PostID]++
+		log.Printf(" Consumer-%d received post_id: %s\n", id, parsedMsg.PostID)
 	}
 
-	log.Printf("🧾 Consumer-%d batch result: %+v\n", id, postCount)
+	type LikePayload struct {
+		PostID    string `json:"PostID"`
+		LikeCount int    `json:"LikeCount"`
+	}
+
+	var payload []LikePayload
+	for postID, count := range postCount {
+		payload = append(payload, LikePayload{
+			PostID:    postID,
+			LikeCount: count,
+		})
+	}
+	for _, it := range payload {
+		fmt.Println("postid is ", it.PostID)
+		fmt.Println("count is ", it.LikeCount)
+	}
+
+	jsonBytes, err := json.Marshal(payload)
+	if err != nil {
+		log.Printf("❌ Consumer-%d: Failed to marshal payload: %v", id, err)
+		return
+	}
+
+	resp, err := http.Post("http://localhost:8001/likes/batch", "application/json", bytes.NewBuffer(jsonBytes))
+	if err != nil {
+		log.Printf("❌ Consumer-%d: HTTP request failed: %v", id, err)
+		return
+	}
+	defer resp.Body.Close()
+
+	log.Printf("📬 Consumer-%d: Sent batch to /likes/batch, got status: %s", id, resp.Status)
 }
