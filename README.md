@@ -20,5 +20,5 @@ The **Like-Counter** system is a backend service that ingests thousands of like 
    Like events are pushed into Kafka topics. Each message includes the content ID (e.g., `post_id`) that received the like.
 
 2. **Batch Aggregation**  
-   The service consumes messages in batches (e.g., thousands at a time). Instead of incrementing the database for each individual like, it aggregates counts in memory:
+   The service consumes messages in batches (e.g., thousands at a time). Instead of incrementing the database for each individual like, it aggregates counts in memory batch size can be tuned for better results:
 
