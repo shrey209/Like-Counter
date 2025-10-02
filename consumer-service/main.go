@@ -27,7 +27,7 @@ func main() {
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
 	<-sigChan
-	log.Println("🔻 Shutting down...")
+	log.Println("🔻 Shutting down.....")
 	cancel()
 	consumer1.Reader.Close()
 	consumer2.Reader.Close()
